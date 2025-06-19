@@ -2,74 +2,50 @@
 # These examples demonstrate the types of issues CodeAnt AI can detect and fix
 
 # Example 1: Security Vulnerability - SQL Injection
-def vulnerable_login(username, password):
-    """
-    This function demonstrates a SQL injection vulnerability
-    CodeAnt AI would flag this as a critical security issue
-    """
-    import sqlite3
-    
-    # VULNERABLE CODE - SQL Injection risk
-    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
-    
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute(query)  # This is vulnerable to SQL injection
-    result = cursor.fetchone()
-    conn.close()
-    
-    return result is not None
 
 # Example 1 - FIXED VERSION (CodeAnt AI would suggest this)
 def secure_login(username, password):
-    """
-    Fixed version using parameterized queries
-    """
+    """Fixed version using parameterized queries"""
     import sqlite3
-    
-    # SECURE CODE - Using parameterized queries
-    query = "SELECT * FROM users WHERE username = ? AND password = ?"
-    
+
     conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute(query, (username, password))  # Safe from SQL injection
-    result = cursor.fetchone()
-    conn.close()
-    
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ? AND password = ?", 
+            (username, password)
+        )
+        result = cursor.fetchone()
+    finally:
+        conn.close()
+
     return result is not None
 
 # Example 2: Code Quality Issues - Complex Function
 def complex_function(data, option, flag, mode, setting):
     """
-    This function has multiple issues:
-    - Too many parameters
-    - High cyclomatic complexity
-    - No type hints
-    - Poor naming
+    Refactored to enhance readability and maintain the same behavior.
     """
-    if option == 1:
-        if flag:
-            if mode == "advanced":
-                if setting > 5:
-                    result = []
-                    for item in data:
-                        if item % 2 == 0:
-                            if item > 10:
-                                result.append(item * 2)
-                            else:
-                                result.append(item)
-                        else:
-                            if item < 50:
-                                result.append(item + 1)
-                    return result
-                else:
-                    return [x for x in data if x > 0]
-            else:
-                return data[:10]
-        else:
-            return sorted(data)
-    else:
+    if option != 1:
         return data
+
+    if not flag:
+        return sorted(data)
+
+    if mode != "advanced":
+        return data[:10]
+
+    if setting <= 5:
+        return [x for x in data if x > 0]
+
+    result = []
+    for item in data:
+        if item % 2 == 0:
+            result.append(item * 2 if item > 10 else item)
+        elif item < 50:
+            result.append(item + 1)
+
+    return result
 
 # Example 2 - REFACTORED VERSION (CodeAnt AI would suggest improvements)
 from typing import List, Literal
